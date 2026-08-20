@@ -23,7 +23,7 @@ cfg = tmp / "config.yaml"
 cfg.write_text(
     f"claude_projects_root: {FIXTURES / 'projects'}\ndata_dir: {tmp / 'data'}\n",
     encoding="utf-8")
-os.environ["SESSION_LENS_CONFIG"] = str(cfg)
+os.environ["SESSION_METER_CONFIG"] = str(cfg)
 
 from ingest.adapter_claude import parse as parse_claude  # noqa: E402
 from ingest.adapter_pi import parse as parse_pi          # noqa: E402

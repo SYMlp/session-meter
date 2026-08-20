@@ -1,6 +1,4 @@
-# session-lens
-
-> 占位仓名，待定。
+# session-meter
 
 跨 harness 的 **agent 会话日志计量内核**：把 Claude Code / dsh / Pi 等宿主的会话日志解析成中立事件层，在其上机械提取探索判据——不靠模型算力，不碰对话原文。
 
@@ -29,7 +27,7 @@ metrics/criteria.py        判据五件套：depth / width / files_read / ttfe_t
 scan.py                    raw → canonical events（增量，manifest 去重）
 report.py                  总账 + 环节占比 + 超线性指数 α
 ledger.py                  会话账本：每 session 改/读/跑了什么
-lens_config.py             配置解析（私有路径全部外置）
+meter_config.py             配置解析（私有路径全部外置）
 ```
 
 ## 跑法

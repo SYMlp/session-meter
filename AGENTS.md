@@ -1,6 +1,6 @@
 # AGENTS.md
 
-session-lens（占位名）——跨 harness 的 agent 会话日志计量内核。本文件是项目规约唯一真相源；`CLAUDE.md` 只做 `@AGENTS.md` 薄导入。
+session-meter——跨 harness 的 agent 会话日志计量内核。本文件是项目规约唯一真相源；`CLAUDE.md` 只做 `@AGENTS.md` 薄导入。
 
 ## 定位
 
@@ -19,6 +19,6 @@ session-lens（占位名）——跨 harness 的 agent 会话日志计量内核�
 
 ## 工程口径
 
-- Python 全 stdlib（matplotlib 仅 `report.py --plot` 可选）；conda env `session-lens`。
+- Python 全 stdlib（matplotlib 仅 `report.py --plot` 可选）；conda env `session-meter`。
 - 判据只量「省不省」，不量「对不对」；`unknown` 占比必须显式报告。
 - 不做 backward-compat；`CANON_VERSION` 变更即重扫。

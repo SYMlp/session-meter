@@ -25,7 +25,7 @@ from pathlib import Path
 from ingest.adapter_claude import first_user_text
 from ingest.canonical import CANON_VERSION, MUTATION
 from ledger import session_digest
-from lens_config import load as load_cfg
+from meter_config import load as load_cfg
 from metrics.criteria import measure
 
 CFG = load_cfg()

@@ -22,7 +22,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from ingest.canonical import CANON_VERSION  # noqa: E402
-from lens_config import data_dir  # noqa: E402
+from meter_config import data_dir  # noqa: E402
 
 CRITERIA_VERSION = 1
 DATA = data_dir()

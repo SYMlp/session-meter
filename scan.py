@@ -13,7 +13,7 @@ from pathlib import Path
 
 from ingest.adapter_claude import parse
 from ingest.canonical import CANON_VERSION
-from lens_config import load
+from meter_config import load
 
 CFG = load()
 SRC = Path(CFG["claude_projects_root"])

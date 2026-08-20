@@ -6,7 +6,7 @@ import math
 from pathlib import Path
 
 from ingest.canonical import CANON_VERSION
-from lens_config import data_dir
+from meter_config import data_dir
 
 DATA = data_dir()
 OUT = DATA / "events" / f"v{CANON_VERSION}"

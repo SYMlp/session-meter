@@ -12,7 +12,7 @@ import datetime
 import json
 
 from ingest.canonical import CANON_VERSION, MUTATION, RETRIEVAL
-from lens_config import data_dir
+from meter_config import data_dir
 from report import cost_of
 
 DATA = data_dir()

@@ -1,4 +1,4 @@
-"""配置解析：SESSION_LENS_CONFIG 环境变量 > 仓根 config.yaml > 内置默认。
+"""配置解析：SESSION_METER_CONFIG 环境变量 > 仓根 config.yaml > 内置默认。
 
 config 格式刻意限制为扁平 key: value——省掉 yaml 依赖，stdlib 就能读。
 """
@@ -30,7 +30,7 @@ def _parse_flat_yaml(path: Path) -> dict:
 
 def load() -> dict:
     cfg = dict(DEFAULTS)
-    env = os.environ.get("SESSION_LENS_CONFIG")
+    env = os.environ.get("SESSION_METER_CONFIG")
     path = Path(env) if env else ROOT / "config.yaml"
     if path.exists():
         base = path.resolve().parent
