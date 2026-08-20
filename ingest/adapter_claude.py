@@ -31,6 +31,37 @@ def _result_size(msg):
     return n
 
 
+def first_user_text(path, limit=80):
+    """展示增强（收割单等私有产物用）：读源日志首条真实用户消息的前 limit 字。
+
+    这是适配器层的宿主特异通道——canonical 事件仍不存原文；
+    消费方必须把产物落在私有目录，不得进任何对外产物。
+    """
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                if r.get("type") != "user" or "toolUseResult" in r or r.get("isMeta"):
+                    continue
+                c = (r.get("message") or {}).get("content")
+                if isinstance(c, list):
+                    c = "".join(b.get("text", "") for b in c
+                                if isinstance(b, dict) and b.get("type") == "text")
+                if isinstance(c, str):
+                    t = " ".join(c.split())
+                    if t and not t.startswith("<"):  # 跳过 command/system 注入
+                        return t[:limit]
+    except OSError:
+        pass
+    return ""
+
+
 def parse(path):
     """→ (events: list[dict], stats: dict)"""
     events, stats = [], {"lines": 0, "bad_json": 0, "degraded": 0, "sidechain": 0}
