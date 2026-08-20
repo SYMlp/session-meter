@@ -1,0 +1,15 @@
+# session-lens 配置模板。
+# 用法：复制为同目录 config.yaml（已 gitignore）再改；或用环境变量 SESSION_LENS_CONFIG 指到任意路径。
+# 格式约束：扁平 key: value（为了零依赖解析，不支持嵌套）。相对路径相对本文件所在目录解析，~ 会展开。
+
+# Claude Code 转写日志根目录（适配器 #1 的输入）
+claude_projects_root: ~/.claude/projects
+
+# Pi session 日志根目录（适配器 #3 的输入，可选）
+pi_sessions_root: ~/.pi/agent/sessions
+
+# canonical 事件 / manifest / 判据 / baseline 的落盘目录（永不进 git）
+data_dir: ./data
+
+# 收割单输出目录（私有部署可指到任意位置）
+harvest_out_dir: ./data/harvest

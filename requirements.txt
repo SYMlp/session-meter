@@ -1,0 +1,2 @@
+# conda env: session-lens (python 3.12)。核心全 stdlib。
+matplotlib  # 仅 report.py --plot 需要
