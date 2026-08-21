@@ -70,6 +70,10 @@ Pi 尤其严重（默认不开 grep/find/ls 工具，检索全挤到 bash）。
 `ledger.py` 已用 `FILE_TOOLS` 白名单规避；**`criteria.py` 的 `files_read` 没有这道规避**，
 消费该指标时必须知道这条，或另算路径级补充指标。
 
+> ⚠ 实证：每个**新的 target 消费点**都会重新踩这个坑（`ledger` → `harvest` 文件 TOP →
+> `reader` 返工热点，三次）。新代码凡把 `target` 当文件路径用，先问一句：
+> 「壳命令的 target 进来会怎样？」——答案永远是套 `MUTATION`/`RETRIEVAL` 工具名白名单。
+
 ## 隐私约束（写进 schema 而不只是 README）
 
 - 任何 core 字段**不得**包含自然语言原文：用户/助手文本仅存 `text_len` + `text_hash`。

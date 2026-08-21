@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 
 from harvest import active_on, iter_event_files, source_path, summarize, short_path
+from ingest.canonical import MUTATION
 from meter_config import load as load_cfg
 
 CFG = load_cfg()
@@ -115,7 +116,8 @@ def render(meta, items, stats):
                 t = items[j]
                 if t["kind"] == "tool_call":
                     cats[t["category"]] += 1
-                    if t["category"] == "mutation" and t.get("target"):
+                    # 热点只信文件工具的 target（壳命令 target 是首 token，如 cd——已三次踩坑）
+                    if t["name"] in MUTATION and t.get("target"):
                         sp = short_path(t["target"])
                         rework[sp] += 1
                         first_anchor.setdefault(sp, f"g{i}")
