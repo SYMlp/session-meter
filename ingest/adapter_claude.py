@@ -62,6 +62,73 @@ def first_user_text(path, limit=80):
     return ""
 
 
+def transcript(path):
+    """展示通道：原始日志 → 展示级条目序列（含对话原文）。
+
+    与 canonical 事件（不存原文）并行的第二通道，只供私有产物（session 阅读器）。
+    消费方必须把产物落在私有目录。thinking/reasoning 流不产出（过程非结论），只计数。
+    → (items: list[dict], stats: dict)
+    """
+    items, stats = [], {"thinking_blocks": 0, "bad_json": 0}
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                r = json.loads(line)
+            except Exception:
+                stats["bad_json"] += 1
+                continue
+            t = r.get("type")
+            ts = (r.get("timestamp") or "")
+            msg = r.get("message") or {}
+
+            if t == "user" and "toolUseResult" not in r:
+                c = msg.get("content")
+                if isinstance(c, list):
+                    c = "".join(b.get("text", "") for b in c
+                                if isinstance(b, dict) and b.get("type") == "text")
+                if isinstance(c, str) and c.strip():
+                    items.append({"kind": "user", "ts": ts, "text": c.strip(),
+                                  "meta": bool(r.get("isMeta")) or c.strip().startswith("<")})
+
+            elif t == "user":
+                for b in (msg.get("content") or []):
+                    if isinstance(b, dict) and b.get("type") == "tool_result":
+                        c = b.get("content")
+                        if not isinstance(c, str):
+                            c = json.dumps(c, ensure_ascii=False) if c else ""
+                        items.append({"kind": "tool_result", "ts": ts,
+                                      "ok": not b.get("is_error"),
+                                      "size": len(c), "preview": c[:300]})
+
+            elif t == "assistant":
+                for b in (msg.get("content") or []):
+                    if not isinstance(b, dict):
+                        continue
+                    bt = b.get("type")
+                    if bt == "text" and b.get("text", "").strip():
+                        items.append({"kind": "assistant", "ts": ts,
+                                      "text": b["text"].strip(),
+                                      "model": msg.get("model")})
+                    elif bt == "thinking":
+                        stats["thinking_blocks"] += 1
+                    elif bt == "tool_use":
+                        name = b.get("name") or ""
+                        inp = b.get("input") or {}
+                        raw = inp.get("command") if isinstance(inp, dict) else None
+                        items.append({"kind": "tool_call", "ts": ts, "name": name,
+                                      "category": classify(name, raw),
+                                      "target": target_of(name, inp),
+                                      "raw": (raw or "")[:400]})
+
+            elif t == "file-history-delta":
+                items.append({"kind": "file_event", "ts": ts,
+                              "path": r.get("trackingPath")})
+    return items, stats
+
+
 def parse(path):
     """→ (events: list[dict], stats: dict)"""
     events, stats = [], {"lines": 0, "bad_json": 0, "degraded": 0, "sidechain": 0}

@@ -82,4 +82,21 @@ r3 = subprocess.run([sys.executable, str(ROOT / "metrics" / "criteria.py"), "--s
                     capture_output=True, text=True, env=env, cwd=str(ROOT))
 assert r3.returncode == 0, r3.stderr
 
-print("SMOKE OK —— 适配器×2 / 判据五件套 / scan / report / criteria 全通")
+# —— 展示通道 transcript（与 canonical 相反：这条通道就是要原文）——
+from ingest.adapter_claude import transcript  # noqa: E402
+items, tstats = transcript(MAIN)
+kinds = [it["kind"] for it in items]
+assert kinds.count("user") == 1 and kinds.count("tool_call") == 4
+assert any(it["kind"] == "user" and "帮我修" in it["text"] for it in items)
+assert any(it["kind"] == "tool_call" and it["category"] == "verification" for it in items)
+assert kinds.count("file_event") == 1
+
+# —— reader：阅读页生成（产物含原文 → 只落私有目录，这里是临时目录）——
+import reader  # noqa: E402
+pages = reader.generate_for_date("2026-08-20")
+assert len(pages) == 2, f"母会话+子 agent 应各一页，得到 {len(pages)}"
+page = next(p for p in pages if "11111111" in p.name).read_text(encoding="utf-8")
+assert "帮我修" in page and "<details" in page and "pytest" in page
+assert 'charset="utf-8"' in page and "zh-Hans" in page
+
+print("SMOKE OK —— 适配器×2 / 判据五件套 / scan / report / criteria / transcript / reader 全通")

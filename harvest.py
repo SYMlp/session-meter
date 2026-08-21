@@ -103,7 +103,20 @@ def collect(day):
     return rows
 
 
+def load_names():
+    p = Path(CFG["harvest_out_dir"]) / "names.json"
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
 def render(day, rows):
+    names = load_names()
+    for r in rows:
+        n = names.get(r["sid"]) or {}
+        r["disp"] = n.get("name") or r["title"]
+        r["group"] = n.get("group") or ""
     mains = [r for r in rows if not r["sub"]]
     subs = [r for r in rows if r["sub"]]
     tot_steps = sum(r["steps"] for r in rows)
@@ -127,7 +140,15 @@ def render(day, rows):
             L.append(f"- {v}× `{k}`")
         L.append("")
 
-    L += ["| 工作区 | 摘要 | 轮 | 步 | 五件套 d/w/r/t/rw | 环节 | 动过的文件 |",
+    groups = collections.Counter(r["group"] for r in rows if r["group"])
+    if groups:
+        L.append("**按线分组**（命名来自语义档建议，改名编辑 `names.json`）：")
+        for g, c in groups.most_common():
+            members = "、".join(r["disp"][:16] for r in rows if r["group"] == g)
+            L.append(f"- **{g}**（{c}）：{members}")
+        L.append("")
+
+    L += ["| 工作区 | 摘要（点开阅读页） | 轮 | 步 | 五件套 d/w/r/t/rw | 环节 | 动过的文件 |",
           "|:--|:--|--:|--:|:--|:--|:--|"]
     for r in sorted(rows, key=lambda r: -r["steps"]):
         m = r["m"]
@@ -135,9 +156,10 @@ def render(day, rows):
         if not m["edited"]:
             five += " (未编辑)"
         ws = r["ws"] + (" ↳子" if r["sub"] else "") + (" ⏳跨天" if r["cross_day"] else "")
-        title = r["title"][:60].replace("|", "\\|")
+        title = r["disp"][:60].replace("|", "\\|").replace("[", "").replace("]", "")
+        link = f"[{title}](sessions/{day}/{r['sid']}.html)"
         files = r["files_line"].replace("|", "\\|")
-        L.append(f"| {ws} | {title} | {r['turns']} | {r['steps']} | {five} | {r['cat_line']} | {files} |")
+        L.append(f"| {ws} | {link} | {r['turns']} | {r['steps']} | {five} | {r['cat_line']} | {files} |")
 
     L += ["",
           "> 五件套：d 串行深度 / w 并行宽度 / r 检索去重目标 / t 首编前输入(千tok) / rw 同目标返工。",
@@ -149,6 +171,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", default=datetime.date.today().isoformat())
     ap.add_argument("--no-scan", action="store_true")
+    ap.add_argument("--no-pages", action="store_true", help="不生成阅读页")
     ap.add_argument("--out", help="覆盖 config 的 harvest_out_dir/<date>.md")
     a = ap.parse_args()
 
@@ -158,7 +181,8 @@ def main():
         if r.returncode != 0:
             print(r.stderr, file=sys.stderr)
             sys.exit(1)
-        print(r.stdout.strip().splitlines()[-3] if r.stdout.strip() else "scan done")
+        lines = r.stdout.strip().splitlines()
+        print(lines[-3] if len(lines) >= 3 else (lines[-1] if lines else "scan done"))
 
     rows = collect(a.date)
     md = render(a.date, rows)
@@ -166,6 +190,11 @@ def main():
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(md, encoding="utf-8")
     print(f"{len(rows)} 个当日活动 session → {out}")
+
+    if not a.no_pages:
+        import reader  # 惰性 import：reader 顶部 import harvest，避免循环
+        pages = reader.generate_for_date(a.date)
+        print(f"{len(pages)} 个阅读页 → sessions/{a.date}/")
 
 
 if __name__ == "__main__":
